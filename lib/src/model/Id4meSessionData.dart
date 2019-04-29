@@ -11,16 +11,19 @@ class Id4meSessionData {
   String nonce;
   String scope = "openid";
   bool standardClaimsValidated = false;
-  Map<String,dynamic> bearerToken = null;
+  Map<String, dynamic> bearerToken = null;
   String accessToken = null;
   String idToken = null;
-  Map<String,dynamic> userinfo = null;
-  Map<String,dynamic> idTokenUserinfo = null;
-  Map<String,dynamic> accessTokenUserinfo = null;
+  Map<String, dynamic> userinfo = null;
+  Map<String, dynamic> idTokenUserinfo = null;
+  Map<String, dynamic> accessTokenUserinfo = null;
   String iau = null;
   String iag = null;
-  double tokenExpires = 0;
+  int tokenExpires = 0;
   Id4meIdentityAuthorityData iauData;
 
-  Id4meSessionData();
+  Id4meSessionData() {
+    Uuid uuid = new Uuid();
+    nonce = uuid.v4();
+  }
 }

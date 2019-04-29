@@ -4,9 +4,9 @@ import 'package:id4me_api/id4me_api.dart';
 
 void main() async {
   Map<String, dynamic> properties = {
-    Id4meConstants.KEY_CLIENT_NAME:
+    Id4meConstants.KEY_CLIENT_NAME: "ID4me Demo",
+    Id4meConstants.KEY_LOGO_URI:
         "https://www.androidpit.com/img/logo/favicon.png",
-    Id4meConstants.KEY_LOGO_URI: "ID4me Demo",
     Id4meConstants.KEY_REDIRECT_URI:
         "https://www.androidpit.com/id4me/demo-callback",
     Id4meConstants.KEY_DNS_RESOLVER: "8.8.8.8",
@@ -19,9 +19,7 @@ void main() async {
       new Id4meLogon(properties: properties, claimsParameters: claimsConfig);
 
   print("Please enter your ID4me identifier: ");
-  //String domain = stdin.readLineSync();
-
-  String domain = "junkdragons.de";
+  String domain = stdin.readLineSync();
 
   print("Creating session data...");
   Id4meSessionData sessionData = await logon.createSessionData(domain, true);
@@ -35,11 +33,9 @@ void main() async {
   String code = stdin.readLineSync();
 
   print("Verifying code...");
-  logon.authenticate(sessionData, code);
+  await logon.authenticate(sessionData, code);
 
   print("Retrieving user info...");
-  logon.userinfo(sessionData);
-
-  //JSONObject userinfo = sessionData.getUserinfo();
-  //System.out.println("\nuserinfo = " + userinfo.toString(4));
+  Map<String, dynamic> info = await logon.userinfo(sessionData);
+  print(info);
 }
