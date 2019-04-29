@@ -2,6 +2,8 @@ part of id4me_api;
 
 class Id4meSessionData {
   String identityHandle;
+
+  /// The login name. A domain or a email.
   String id4me = null;
   String redirectUri = "";
   List<String> redirectUris = null;

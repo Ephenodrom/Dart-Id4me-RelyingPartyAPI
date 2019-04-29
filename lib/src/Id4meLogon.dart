@@ -17,11 +17,13 @@ class Id4meLogon {
   Id4meClaimsConfig claimsConfig;
   Id4meKeyPairHandler keyPairHandler;
   bool fallbackToScopes;
+  bool logSessionData;
 
   Id4meLogon(
       {Map<String, dynamic> properties,
       Map<String, dynamic> claimsParameters,
-      List<String> scopes}) {
+      List<String> scopes,
+      this.logSessionData = false}) {
     if (properties != null) {
       _readProperties(properties);
     }
@@ -78,8 +80,8 @@ class Id4meLogon {
       dnsResolver = "127.0.0.1";
     }
 
-    this.resolver = new Id4meResolver(dnsResolver, dnssecRootKey,
-        properties[Id4meConstants.KEY_DNSSEC_REQUIRED]);
+    //this.resolver = new Id4meResolver(dnsResolver, dnssecRootKey,
+    //properties[Id4meConstants.KEY_DNSSEC_REQUIRED]);
 
     if (properties.containsKey(Id4meConstants.KEY_PRIVATE_KEY) &&
         properties.containsKey(Id4meConstants.KEY_PUBLIC_KEY)) {
@@ -235,11 +237,13 @@ class Id4meLogon {
 
   Future<Id4meSessionData> createSessionData(
       String id4me, bool autoRegisterClient) async {
+    Logger(TAG).info("Fetching Id4meDnsData for login $id4me");
+    Id4meDnsDataWithLoginHint dnsDataWithLoginHint =
+        await Id4meResolver.getDataFromDns(id4me);
+
+    Logger(TAG).info("Setup id4me session data");
     Id4meSessionData sessionData = new Id4meSessionData();
     sessionData.id4me = id4me;
-    Id4meDnsDataWithLoginHint dnsDataWithLoginHint =
-        await resolver.getDataFromDns(id4me);
-
     Id4meDnsData dnsData = dnsDataWithLoginHint.id4meDnsData;
 
     sessionData.loginHint = dnsDataWithLoginHint.loginHint;
@@ -250,38 +254,34 @@ class Id4meLogon {
     sessionData.redirectUri = this.redirectUri;
     sessionData.logoUri = this.logoUri;
 
-    Logger(TAG).info("Creating session data using login hint: " +
-        dnsDataWithLoginHint.loginHint);
-    Logger(TAG)
-        .info("Creating session data using redirect URI: " + redirectUri);
-    Logger(TAG).info("Creating session data using logo URI: " + logoUri);
-
     Id4meIdentityAuthorityData iauData = await getIauData(sessionData);
     sessionData.iauData = iauData;
     if (autoRegisterClient) {
       await doDynamicClientRegistration(sessionData);
     }
+    if (logSessionData) {
+      printSessionData(sessionData);
+    }
     return sessionData;
   }
 
   ///
-  /// Gets the .well-known/openid-configuration for the identitity authority
+  /// Fetches the openid configuration for the identitity authority
   ///
-  Future<Id4meIdentityAuthorityData> getIauData(
-      Id4meSessionData sessionData) async {
-    String iau = sessionData.iau;
-    Logger(TAG).info("Retrieving identity authority: " + iau);
-
-    Id4meIdentityAuthorityData data = new Id4meIdentityAuthorityData();
-
+  Future<Id4meIdentityAuthorityData> getIauData(Id4meSessionData sData) async {
+    String iau = sData.iau;
     String wellKnownUri =
         "https://" + iau + "/.well-known/openid-configuration";
+    Logger(TAG).info("Fetch openid configuration for $iau at $wellKnownUri");
+    Id4meIdentityAuthorityData iauData = new Id4meIdentityAuthorityData();
     Map<String, dynamic> wellKnownData = await HttpUtils.get(wellKnownUri);
-    data.wellKnown = wellKnownData;
-    Logger(TAG).info(wellKnownData.toString());
-    return data;
+    iauData.wellKnown = wellKnownData;
+    return iauData;
   }
 
+  ///
+  /// Fetch the registration data for the identitity authority
+  ///
   Future<Map<String, dynamic>> getRegistrationData(
       Id4meSessionData sessionData) async {
     Id4meIdentityAuthorityData data = sessionData.iauData;
@@ -468,5 +468,18 @@ class Id4meLogon {
         throw new Exception("Unknown error while fetching user info");
     }
     return response;
+  }
+
+  ///
+  /// Logs the given session data
+  ///
+  void printSessionData(Id4meSessionData data) {
+    Logger(TAG).info("id4me = " + data.id4me);
+    Logger(TAG).info("loginHint = " + data.loginHint);
+    Logger(TAG).info("redirectUri = " + data.redirectUri);
+    Logger(TAG).info("logoUri = " + data.logoUri);
+    Logger(TAG).info("state = " + data.state);
+    Logger(TAG).info("nonce = " + data.nonce);
+    Logger(TAG).info("scope = " + data.scope);
   }
 }

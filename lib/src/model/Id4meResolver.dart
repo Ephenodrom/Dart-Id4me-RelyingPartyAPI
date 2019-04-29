@@ -1,13 +1,9 @@
 part of id4me_api;
 
 class Id4meResolver {
-  String TAG = "Id4meResolver";
-  //Resolver vr;
-  bool dnssecRequired;
+  static String TAG = "Id4meResolver";
 
-  Id4meResolver(String dnsServer, String rootKey, bool dnssecRequired);
-
-  Future<Id4meDnsDataWithLoginHint> getDataFromDns(String id4me) async {
+  static Future<Id4meDnsDataWithLoginHint> getDataFromDns(String id4me) async {
     if (!Id4meValidator.isValidUserid(id4me)) {
       throw new Exception("ID4me identifier has wrong format: " + id4me);
     }
@@ -27,6 +23,12 @@ class Id4meResolver {
     List<RRecord> records =
         await DnsUtils.lookupRecord(domain, RRecordType.TXT);
 
+    Id4meDnsData dnsData = getId4meDnsDataFromRRecords(records);
+
+    return Id4meDnsDataWithLoginHint(dnsData, loginHint);
+  }
+
+  static Id4meDnsData getId4meDnsDataFromRRecords(List<RRecord> records) {
     String v = null;
     String iau = null;
     String iag = null;
@@ -96,6 +98,10 @@ class Id4meResolver {
         });
       }
     });
-    return Id4meDnsDataWithLoginHint(Id4meDnsData(v, iau, iag), loginHint);
+    if (v != null && iag != null && iau != null) {
+      return Id4meDnsData(v, iau, iag);
+    } else {
+      return null;
+    }
   }
 }
