@@ -19,13 +19,14 @@ void main() async {
       new Id4meLogon(properties: properties, claimsParameters: claimsConfig);
 
   print("Please enter your ID4me identifier: ");
-  String domain = stdin.readLineSync();
+  //String domain = stdin.readLineSync();
 
+  String domain = "junkdragons.de";
   print("Creating session data...");
   Id4meSessionData sessionData = await logon.createSessionData(domain, true);
 
   print("Building authorization URL...");
-  String authorizationURL = logon.authorize(sessionData);
+  String authorizationURL = logon.buildAuthorizationUrl(sessionData);
 
   print("authorizationURL = $authorizationURL");
 

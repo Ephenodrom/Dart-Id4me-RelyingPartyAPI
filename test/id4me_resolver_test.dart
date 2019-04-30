@@ -16,4 +16,19 @@ void main() {
     expect(data.iau, "auth.freedom-id.de");
     expect(data.iag, "identityagent.de");
   });
+
+  test('Test lookupRecord2', () async {
+    List<RRecord> records = [];
+
+    RRecord r = new RRecord(
+        name: "_openid.example.com",
+        type: 16,
+        TTL: 300,
+        data: '"v=OID1;iss=id.test.denic.de;clp=identityagent.de"');
+    records.add(r);
+    Id4meDnsData data = Id4meResolver.getId4meDnsDataFromRRecords(records);
+    expect(data.v, "OID1");
+    expect(data.iau, "id.test.denic.de");
+    expect(data.iag, "identityagent.de");
+  });
 }

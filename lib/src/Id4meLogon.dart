@@ -91,25 +91,30 @@ class Id4meLogon {
     }
   }
 
-  String authorize(Id4meSessionData sessionData) {
+  ///
+  /// Builds the authorization url.
+  ///
+  String buildAuthorizationUrl(Id4meSessionData sessionData) {
+    Logger(TAG).info("Building the authorization url");
     Id4meIdentityAuthorityData data = sessionData.iauData;
     Map<String, dynamic> wellKnown = sessionData.iauData.wellKnown;
-    String claimsParam = "";
-    String scopeParam = "&scope=" + claimsConfig.scopes;
+    Map<String, String> queryParameters = Map<String, String>();
+    queryParameters["scope"] = claimsConfig.scopes;
 
     if (wellKnown.containsKey("claims_parameter_supported")) {
       bool claims_parameter_supported = wellKnown["claims_parameter_supported"];
       if (claims_parameter_supported) {
         Logger(TAG).info("Claims parameter are supported.");
-        claimsParam = "&claims=" + claimsConfig.claimsParam.toString();
+        queryParameters["claims"] = claimsConfig.claimsParam.toString();
       } else {
         Logger(TAG).info("Claims parameter are not supported.");
         if (fallbackToScopes) {
-          scopeParam = "&scope=" + claimsConfig.getScopesForClaims();
+          queryParameters["scope"] = claimsConfig.getScopesForClaims();
           Logger(TAG).info(
               "claims_parameter_supported == false AND fallbackToScops == true, add missing scopes for " +
-                  data.iau);
-          Logger(TAG).info(data.iau + ", set new scopeParam: " + scopeParam);
+                  data.iau +
+                  ", set new scopeParam: " +
+                  queryParameters["scope"]);
         } else {
           Logger(TAG).info("Claims parameter not supported for " +
               data.iau +
@@ -117,28 +122,21 @@ class Id4meLogon {
         }
       }
     } else {
-      claimsParam = "&claims=" + claimsConfig.claimsParam.toString();
+      queryParameters["claims"] = claimsConfig.claimsParam.toString();
       Logger(TAG).info(
           "claims_parameter_supported not found in .wellKnown data for " +
               data.iau +
               ", scopes not modified");
     }
-
-    String authorizeUri = data.wellKnown["authorization_endpoint"] +
-        "?" +
-        "response_type=code" +
-        claimsParam +
-        scopeParam +
-        "&client_id=" +
-        sessionData.iauData.clientId +
-        "&redirect_uri=" +
-        sessionData.redirectUri +
-        "&state=" +
-        sessionData.state +
-        "&nonce=" +
-        sessionData.nonce +
-        "&login_hint=" +
-        sessionData.loginHint;
+    queryParameters["response_type"] = "code";
+    queryParameters["client_id"] = sessionData.iauData.clientId;
+    queryParameters["redirect_uri"] = sessionData.redirectUri;
+    queryParameters["state"] = sessionData.state;
+    queryParameters["nonce"] = sessionData.nonce;
+    queryParameters["login_hint"] = sessionData.loginHint;
+    String authUrl = data.wellKnown["authorization_endpoint"];
+    String authorizeUri =
+        Uri.parse(authUrl).replace(queryParameters: queryParameters).toString();
 
     Logger(TAG).info("Authorizing: authorize URI: {}", authorizeUri);
 
@@ -235,6 +233,9 @@ class Id4meLogon {
     return userinfo;
   }
 
+  ///
+  /// Builds the id4me session data, by fetching the DNS data and identity authority data.
+  ///
   Future<Id4meSessionData> createSessionData(
       String id4me, bool autoRegisterClient) async {
     Logger(TAG).info("Fetching Id4meDnsData for login $id4me");
@@ -254,7 +255,7 @@ class Id4meLogon {
     sessionData.redirectUri = this.redirectUri;
     sessionData.logoUri = this.logoUri;
 
-    Id4meIdentityAuthorityData iauData = await getIauData(sessionData);
+    Id4meIdentityAuthorityData iauData = await fetchIauData(sessionData);
     sessionData.iauData = iauData;
     if (autoRegisterClient) {
       await doDynamicClientRegistration(sessionData);
@@ -268,7 +269,8 @@ class Id4meLogon {
   ///
   /// Fetches the openid configuration for the identitity authority
   ///
-  Future<Id4meIdentityAuthorityData> getIauData(Id4meSessionData sData) async {
+  Future<Id4meIdentityAuthorityData> fetchIauData(
+      Id4meSessionData sData) async {
     String iau = sData.iau;
     String wellKnownUri =
         "https://" + iau + "/.well-known/openid-configuration";

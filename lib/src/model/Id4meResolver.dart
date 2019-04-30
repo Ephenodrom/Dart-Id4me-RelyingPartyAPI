@@ -35,7 +35,8 @@ class Id4meResolver {
 
     records.forEach((r) {
       if (r.name.startsWith("_openid")) {
-        List<String> values = r.data.split(";");
+        String data = r.data.replaceAll('"', "");
+        List<String> values = data.split(";");
         values.forEach((value) {
           List<String> e = value.trim().split("=");
           if (e.length == 2) {
