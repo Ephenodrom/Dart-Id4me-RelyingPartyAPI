@@ -36,7 +36,7 @@ class Id4meClaimsConfig {
       this.scopes = "openid"});
 
   ///
-  /// Add scopes which contain requested claims. Is used when claims_parameter_supported is false AND fallbackToScopes 
+  /// Add scopes which contain requested claims. Is used when claims_parameter_supported is false AND fallbackToScopes
   /// is true at Id4meLogon.authorize(Id4meSessionData sessionData)
   ///
   String getScopesForClaims() {

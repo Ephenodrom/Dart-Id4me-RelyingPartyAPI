@@ -8,6 +8,7 @@ import 'package:basic_utils/src/model/RRecord.dart';
 import 'package:basic_utils/src/model/RRecordType.dart';
 import 'package:logging/logging.dart';
 import 'package:uuid/uuid.dart';
+import 'package:jose/jose.dart';
 
 part "src/Id4meLogon.dart";
 part "src/model/Id4meClaimsParameters.dart";

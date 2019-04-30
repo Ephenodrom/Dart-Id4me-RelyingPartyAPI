@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:id4me_api/id4me_api.dart';
+import 'dart:convert';
 
 void main() async {
   Map<String, dynamic> properties = {
@@ -13,10 +14,15 @@ void main() async {
     Id4meConstants.KEY_DNSSEC_REQUIRED: false
   };
 
-  Map<String, dynamic> claimsConfig = {};
+  Id4meClaimsParameters claimsParameters = new Id4meClaimsParameters();
+  claimsParameters.entries
+      .add(Entry("email", true, "Needed to create the profile"));
+  claimsParameters.entries
+      .add(Entry("name", false, "Displayname in the user dat"));
+  claimsParameters.entries.add(Entry("given_name", false, ""));
 
-  Id4meLogon logon =
-      new Id4meLogon(properties: properties, claimsParameters: claimsConfig);
+  Id4meLogon logon = new Id4meLogon(
+      properties: properties, claimsParameters: claimsParameters);
 
   print("Please enter your ID4me identifier: ");
   //String domain = stdin.readLineSync();
@@ -38,5 +44,5 @@ void main() async {
 
   print("Retrieving user info...");
   Map<String, dynamic> info = await logon.userinfo(sessionData);
-  print(info);
+  print(json.encode(info));
 }

@@ -21,13 +21,13 @@ class Id4meLogon {
 
   Id4meLogon(
       {Map<String, dynamic> properties,
-      Map<String, dynamic> claimsParameters,
+      Id4meClaimsParameters claimsParameters,
       List<String> scopes,
       this.logSessionData = false}) {
     if (properties != null) {
       _readProperties(properties);
     }
-    claimsConfig = new Id4meClaimsConfig(claimsParam: claimsParameters);
+    claimsConfig = new Id4meClaimsConfig(claimsParam: claimsParameters.toMap());
     if (scopes != null)
       for (String scope in scopes) {
         claimsConfig.addScope(scope);
@@ -99,13 +99,13 @@ class Id4meLogon {
     Id4meIdentityAuthorityData data = sessionData.iauData;
     Map<String, dynamic> wellKnown = sessionData.iauData.wellKnown;
     Map<String, String> queryParameters = Map<String, String>();
-    queryParameters["scope"] = claimsConfig.scopes;
+    queryParameters["response_type"] = "code";
 
     if (wellKnown.containsKey("claims_parameter_supported")) {
       bool claims_parameter_supported = wellKnown["claims_parameter_supported"];
       if (claims_parameter_supported) {
         Logger(TAG).info("Claims parameter are supported.");
-        queryParameters["claims"] = claimsConfig.claimsParam.toString();
+        queryParameters["claims"] = json.encode(claimsConfig.claimsParam);
       } else {
         Logger(TAG).info("Claims parameter are not supported.");
         if (fallbackToScopes) {
@@ -128,7 +128,7 @@ class Id4meLogon {
               data.iau +
               ", scopes not modified");
     }
-    queryParameters["response_type"] = "code";
+    queryParameters["scope"] = claimsConfig.scopes;
     queryParameters["client_id"] = sessionData.iauData.clientId;
     queryParameters["redirect_uri"] = sessionData.redirectUri;
     queryParameters["state"] = sessionData.state;
@@ -157,27 +157,9 @@ class Id4meLogon {
     String identityHandle = null;
     if (bearerToken.containsKey("id_token")) {
       String idToken = bearerToken["id_token"];
-      /*
-      try {
-        
-        EncryptedJWT jwt = EncryptedJWT.parse(idToken);
-        if (jwt.getIV() != null) {
-          // id token seem to be encrypted
-          if (keyPairHandler != null) {
-            RSADecrypter decrypter =
-                new RSADecrypter(keyPairHandler.getKeyPair().getPrivate());
-            jwt.decrypt(decrypter);
-            idToken = jwt.getPayload().toString();
-          } else {
-            throw new Exception(
-                "id token seem to be encrypted but no KeyPair found!");
-          }
-        }
-      } catch (ex) {
-        // id token may not encrypted
-        Logger(TAG).info(ex.toString());
-      }
-      */
+
+      // TODO HANDLE JWT ENCRYPTED
+
       sessionData.idToken = idToken;
       if (identityHandle == null)
         identityHandle = identityHandleFromIdToken(sessionData, idToken);
@@ -386,23 +368,18 @@ class Id4meLogon {
         break;
       case 3:
         Logger(TAG).info("IdToken contains header, payload and signature");
-        // TODO IMPLEMENT
-        /* 
-			SignedJWT signedToken = (SignedJWT) JWTParser.parse(idToken);
-			Map<String,dynamic> jwtsData = fetchJwtsData(sessionData);
-			validateSignedToken(jwtsData, signedToken);
-			validateIdTokenPayload(sessionData, signedToken);
-			Map<String,dynamic> userinfo = new JSONObject(signedToken.getPayload().toString());
-			sessionData.idTokenUserinfo = userinfo;
-			if (userinfo.containsKey("iss") && userinfo.containsKey("sub")) {
-				String identity = userinfo["iss"] + "#" + userinfo["sub"];
-				if (identityHandle != null && identity != identityHandle) {
-					throw new Exception("claims sub + iss from access_token and id_token are different!");
-				} else {
-					identityHandle = identity;
-				}
-			}
-      */
+        var jwt = new JsonWebToken.unverified(idToken);
+        Map<String, dynamic> userinfo = jwt.claims.toJson();
+        sessionData.idTokenUserinfo = userinfo;
+        if (userinfo.containsKey("iss") && userinfo.containsKey("sub")) {
+          String identity = userinfo["iss"] + "#" + userinfo["sub"];
+          if (identityHandle != null && identity != identityHandle) {
+            throw new Exception(
+                "claims sub + iss from access_token and id_token are different!");
+          } else {
+            identityHandle = identity;
+          }
+        }
         break;
       default:
     }
@@ -424,17 +401,12 @@ class Id4meLogon {
         break;
       case 3:
         Logger(TAG).info("AccessToken contains header, payload and signature");
-        // TODO Implement
-        /*
-			SignedJWT signedToken = (SignedJWT) JWTParser.parse(access_token);
-			JSONObject jwtsData = fetchJwtsData(sessionData);
-			validateSignedToken(jwtsData, signedToken);
-			Map<String,dynamic> userinfo = new JSONObject(signedToken.getPayload().toString());
-			sessionData.accessTokenUserinfo = userinfo;
-			if (userinfo.containsKey("iss") && userinfo.containsKey("sub")) {
-				identityHandle = userinfo["iss"] + "#" + userinfo["sub"];
-			}
-      */
+        var jwt = new JsonWebToken.unverified(accessToken);
+        Map<String, dynamic> userinfo = jwt.claims.toJson();
+        sessionData.accessTokenUserinfo = userinfo;
+        if (userinfo.containsKey("iss") && userinfo.containsKey("sub")) {
+          identityHandle = userinfo["iss"] + "#" + userinfo["sub"];
+        }
         break;
       default:
     }
