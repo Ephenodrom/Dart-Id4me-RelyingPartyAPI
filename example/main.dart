@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:id4me_relying_party_api/id4me_api.dart';
+import 'package:id4me_relying_party_api/id4me_relying_party_api.dart';
 import 'dart:convert';
 
 void main() async {

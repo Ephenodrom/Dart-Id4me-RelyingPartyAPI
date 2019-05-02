@@ -32,7 +32,7 @@ dependencies:
 Import the package with :
 
 ```dart
-import 'package:id4me_relying_party_api/id4me_api.dart';
+import 'package:id4me_relying_party_api/id4me_relying_party_api.dart';
 ```
 
 ## Login Flow
