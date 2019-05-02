@@ -176,7 +176,8 @@ class Id4meLogon {
     return;
   }
 
-  Future<Map<String, dynamic>> userinfo(Id4meSessionData sessionData) async {
+  Future<Map<String, dynamic>> fetchUserinfo(
+      Id4meSessionData sessionData) async {
     Map<String, dynamic> userInfo = await getUserinfo(sessionData);
 
     /*

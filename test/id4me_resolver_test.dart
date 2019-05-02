@@ -1,5 +1,5 @@
 import 'package:basic_utils/src/model/RRecord.dart';
-import 'package:id4me_api/id4me_api.dart';
+import 'package:id4me_relying_party_api/id4me_api.dart';
 import "package:test/test.dart";
 
 void main() {

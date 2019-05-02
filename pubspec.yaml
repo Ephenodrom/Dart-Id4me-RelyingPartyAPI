@@ -1,6 +1,6 @@
-name: id4me_api
+name: id4me_relying_party_api
 description: This library provides the functionalities necessary to implement an ID4me Relying Party in Dart.
-version: 1.0.0
+version: 0.1.0
 author: Daniel Linsenmeier <daniel@ephenodrom.de>
 homepage: https://github.com/Ephenodrom/Dart-Id4me-Api
 publish_to: https://pub.dartlang.org

@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:id4me_api/id4me_api.dart';
+import 'package:id4me_relying_party_api/id4me_api.dart';
 import 'dart:convert';
 
 void main() async {
@@ -43,6 +43,6 @@ void main() async {
   await logon.authenticate(sessionData, code);
 
   print("Retrieving user info...");
-  Map<String, dynamic> info = await logon.userinfo(sessionData);
+  Map<String, dynamic> info = await logon.fetchUserinfo(sessionData);
   print(json.encode(info));
 }
