@@ -3,21 +3,18 @@ part of id4me_api;
 class Id4meLogon {
   String TAG = "Id4meLogon";
 
-  //static final String UTF_8 = StandardCharsets.UTF_8.name();
-
-  //final Id4meIdentityAuthorityStorage2 storage =Id4meIdentityAuthorityStorage2.INSTANCE;
-
   Id4meResolver resolver;
   String clientName;
   String redirectUri;
   List<String> redirectUris;
   String logoUri;
   String registrationDataPath;
-  String dnssecRootKey;
+  //String dnssecRootKey;
   Id4meClaimsConfig claimsConfig;
   Id4meKeyPairHandler keyPairHandler;
   bool fallbackToScopes;
   bool logSessionData;
+  bool dnsSecRequired = false;
 
   Id4meLogon(
       {Map<String, dynamic> properties,
@@ -59,12 +56,14 @@ class Id4meLogon {
       this.logoUri = properties[Id4meConstants.KEY_LOGO_URI];
     }
 
+    /*
     if (properties.containsKey(Id4meConstants.KEY_DNS_ROOT_KEY)) {
       this.dnssecRootKey = properties[Id4meConstants.KEY_DNS_ROOT_KEY];
     } else {
       this.dnssecRootKey =
           ". IN DS 19036 8 2 49AAC11D7B6F6446702E54A1607371607A1A41855200FD2CE1CDDE32F24E8FB5";
     }
+    */
 
     if (properties.containsKey(Id4meConstants.KEY_REGISTRATION_DATA_PATH)) {
       this.registrationDataPath =
@@ -73,15 +72,7 @@ class Id4meLogon {
       this.registrationDataPath = "./";
     }
 
-    String dnsResolver;
-    if (properties.containsKey(Id4meConstants.KEY_DNS_RESOLVER)) {
-      dnsResolver = properties[Id4meConstants.KEY_DNS_RESOLVER];
-    } else {
-      dnsResolver = "127.0.0.1";
-    }
-
-    //this.resolver = new Id4meResolver(dnsResolver, dnssecRootKey,
-    //properties[Id4meConstants.KEY_DNSSEC_REQUIRED]);
+    dnsSecRequired = properties[Id4meConstants.KEY_DNSSEC_REQUIRED];
 
     if (properties.containsKey(Id4meConstants.KEY_PRIVATE_KEY) &&
         properties.containsKey(Id4meConstants.KEY_PUBLIC_KEY)) {
@@ -111,7 +102,7 @@ class Id4meLogon {
         if (fallbackToScopes) {
           queryParameters["scope"] = claimsConfig.getScopesForClaims();
           Logger(TAG).info(
-              "claims_parameter_supported == false AND fallbackToScops == true, add missing scopes for " +
+              "claims_parameter_supported == false AND fallbackToScopes == true, add missing scopes for " +
                   data.iau +
                   ", set new scopeParam: " +
                   queryParameters["scope"]);
@@ -186,7 +177,7 @@ class Id4meLogon {
   }
 
   Future<Map<String, dynamic>> userinfo(Id4meSessionData sessionData) async {
-    Map<String, dynamic> userinfo = await getUserinfo(sessionData);
+    Map<String, dynamic> userInfo = await getUserinfo(sessionData);
 
     /*
 		if (userinfo.containsKey("claims")) {
@@ -210,9 +201,9 @@ class Id4meLogon {
 
 		checkMandatoryClaims(userinfo);
     */
-    sessionData.userinfo = userinfo;
+    sessionData.userinfo = userInfo;
     sessionData.state = "userinfo";
-    return userinfo;
+    return userInfo;
   }
 
   ///
@@ -222,7 +213,7 @@ class Id4meLogon {
       String id4me, bool autoRegisterClient) async {
     Logger(TAG).info("Fetching Id4meDnsData for login $id4me");
     Id4meDnsDataWithLoginHint dnsDataWithLoginHint =
-        await Id4meResolver.getDataFromDns(id4me);
+        await Id4meResolver.getDataFromDns(id4me, dnssec: dnsSecRequired);
 
     Logger(TAG).info("Setup id4me session data");
     Id4meSessionData sessionData = new Id4meSessionData();
@@ -258,7 +249,8 @@ class Id4meLogon {
         "https://" + iau + "/.well-known/openid-configuration";
     Logger(TAG).info("Fetch openid configuration for $iau at $wellKnownUri");
     Id4meIdentityAuthorityData iauData = new Id4meIdentityAuthorityData();
-    Map<String, dynamic> wellKnownData = await HttpUtils.get(wellKnownUri);
+    Map<String, dynamic> wellKnownData =
+        await HttpUtils.getForJson(wellKnownUri);
     iauData.wellKnown = wellKnownData;
     return iauData;
   }
@@ -292,7 +284,7 @@ class Id4meLogon {
     Map<String, String> headers = Map<String, String>();
     headers.putIfAbsent("Content-Type", () => "application/json");
 
-    return await HttpUtils.post(url, body, headers: headers);
+    return await HttpUtils.postForJson(url, body, headers: headers);
   }
 
   Future<void> doDynamicClientRegistration(Id4meSessionData sessionData) async {
@@ -340,7 +332,7 @@ class Id4meLogon {
     headers["Content-Type"] = "application/x-www-form-urlencoded";
     headers["Authorization"] = auth;
 
-    return await HttpUtils.post(url, "",
+    return await HttpUtils.postForJson(url, "",
         queryParameters: parameters, headers: headers);
   }
 
@@ -358,7 +350,7 @@ class Id4meLogon {
   String identityHandleFromIdToken(
       Id4meSessionData sessionData, String idToken) {
     String identityHandle = sessionData.identityHandle;
-    List<String> idFields = idToken.split("\\.");
+    List<String> idFields = idToken.split(".");
     switch (idFields.length) {
       case 1:
         Logger(TAG).info("IdToken contains only a header");
@@ -390,7 +382,7 @@ class Id4meLogon {
       Id4meSessionData sessionData, String accessToken) {
     Logger(TAG).info("Try to get identity handle from access_token");
     String identityHandle = null;
-    List<String> aFields = accessToken.split("\\.");
+    List<String> aFields = accessToken.split(".");
 
     switch (aFields.length) {
       case 1:
@@ -427,12 +419,13 @@ class Id4meLogon {
     Map<String, String> headers = new Map<String, String>();
     headers["Authorization"] = authHeader;
 
-    Map<String, dynamic> response = await HttpUtils.get(url, headers: headers);
+    Map<String, dynamic> response =
+        await HttpUtils.getForJson(url, headers: headers);
 
     if (response.containsKey("_claim_sources") &&
         response.containsKey("_claim_names")) {
       // distributed claims
-      //userinfo = getDistributedClaims(userinfo);
+      response = await getDistributedClaims(response);
     }
 
     if (response.containsKey("error")) {
@@ -442,6 +435,36 @@ class Id4meLogon {
         throw new Exception("Unknown error while fetching user info");
     }
     return response;
+  }
+
+  Future<Map<String, dynamic>> getDistributedClaims(
+      Map<String, dynamic> userInfo) async {
+    Map<String, dynamic> currentUserInfo = new Map<String, dynamic>();
+    Map<String, dynamic> claimSources = userInfo["_claim_sources"];
+    List<String> sources = claimSources.keys.toList();
+    for (String src in sources) {}
+    for (String src in sources) {
+      Map<String, dynamic> ep = claimSources[src];
+      String endpoint = ep["endpoint"];
+      String accessToken = ep["access_token"];
+
+      String authHeader = "Bearer " + accessToken;
+      Map<String, String> headers = new Map<String, String>();
+      headers["Authorization"] = authHeader;
+      String response =
+          await HttpUtils.getForString(endpoint, headers: headers);
+      List<String> responseFields = response.split(".");
+      String normalized = base64.normalize(responseFields.elementAt(1));
+      Iterable<int> inputAsUint8List = base64.decode(normalized);
+
+      String s = new String.fromCharCodes(inputAsUint8List);
+      Map<String, dynamic> payload = json.decode(s);
+      List<String> names = payload.keys.toList();
+      for (String n in names) {
+        currentUserInfo[n] = payload[n];
+      }
+    }
+    return currentUserInfo;
   }
 
   ///

@@ -3,7 +3,8 @@ part of id4me_api;
 class Id4meResolver {
   static String TAG = "Id4meResolver";
 
-  static Future<Id4meDnsDataWithLoginHint> getDataFromDns(String id4me) async {
+  static Future<Id4meDnsDataWithLoginHint> getDataFromDns(String id4me,
+      {dnssec = false}) async {
     if (!Id4meValidator.isValidUserid(id4me)) {
       throw new Exception("ID4me identifier has wrong format: " + id4me);
     }
@@ -21,7 +22,7 @@ class Id4meResolver {
 
     String domain = id4me.endsWith(".") ? id4me : id4me + ".";
     List<RRecord> records =
-        await DnsUtils.lookupRecord(domain, RRecordType.TXT);
+        await DnsUtils.lookupRecord(domain, RRecordType.TXT, dnssec: dnssec);
 
     Id4meDnsData dnsData = getId4meDnsDataFromRRecords(records);
 
