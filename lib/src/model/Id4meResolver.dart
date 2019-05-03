@@ -30,9 +30,9 @@ class Id4meResolver {
   }
 
   static Id4meDnsData getId4meDnsDataFromRRecords(List<RRecord> records) {
-    String v = null;
-    String iau = null;
-    String iag = null;
+    String v;
+    String iau;
+    String iag;
 
     records.forEach((r) {
       if (r.name.startsWith("_openid")) {

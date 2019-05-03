@@ -5,13 +5,13 @@ part of id4me_api;
 ///
 class Id4meDnsData {
   /// The id4me record
-  String v = null;
+  String v;
 
   /// Hostname of the Identity Authority
-  String iau = null;
+  String iau;
 
   /// Hostname of the Identity Agent
-  String iag = null;
+  String iag;
 
   Id4meDnsData(this.v, this.iau, this.iag);
 }

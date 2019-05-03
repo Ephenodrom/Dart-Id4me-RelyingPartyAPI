@@ -145,7 +145,7 @@ class Id4meLogon {
       }
     }
 
-    String identityHandle = null;
+    String identityHandle;
     if (bearerToken.containsKey("id_token")) {
       String idToken = bearerToken["id_token"];
 
@@ -382,7 +382,7 @@ class Id4meLogon {
   String identityHandleFromAccessToken(
       Id4meSessionData sessionData, String accessToken) {
     Logger(TAG).info("Try to get identity handle from access_token");
-    String identityHandle = null;
+    String identityHandle;
     List<String> aFields = accessToken.split(".");
 
     switch (aFields.length) {
@@ -443,7 +443,6 @@ class Id4meLogon {
     Map<String, dynamic> currentUserInfo = new Map<String, dynamic>();
     Map<String, dynamic> claimSources = userInfo["_claim_sources"];
     List<String> sources = claimSources.keys.toList();
-    for (String src in sources) {}
     for (String src in sources) {
       Map<String, dynamic> ep = claimSources[src];
       String endpoint = ep["endpoint"];

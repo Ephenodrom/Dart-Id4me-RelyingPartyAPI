@@ -43,110 +43,26 @@ class Id4meClaimsConfig {
     Map<String, dynamic> userinfo = claimsParam["userinfo"];
     String s = scopes;
     for (String c in userinfo.keys) {
-      if (isInList(c, profile)) {
-        if (s.indexOf("profile") < 0) s += " profile";
+      if (StringUtils.inList(c, profile, ignoreCase: true)) {
+        if (s.contains("profile")) s += " profile";
       }
-      if (isInList(c, email)) {
-        if (s.indexOf("email") < 0) s += " email";
+      if (StringUtils.inList(c, email, ignoreCase: true)) {
+        if (s.contains("email")) s += " email";
       }
-      if (isInList(c, address)) {
-        if (s.indexOf("address") < 0) s += " address";
+      if (StringUtils.inList(c, address, ignoreCase: true)) {
+        if (s.contains("address")) s += " address";
       }
-      if (isInList(c, phone)) {
-        if (s.indexOf("phone") < 0) s += " phone";
+      if (StringUtils.inList(c, phone, ignoreCase: true)) {
+        if (s.contains("phone")) s += " phone";
       }
     }
-
     return s.trim();
-  }
-
-  bool isInList(String v, List<String> list) {
-    for (String e in list) {
-      if (StringUtils.equalsIgnoreCase(e, v)) {
-        return true;
-      }
-    }
-    return false;
   }
 
   ///
   /// Adds a scope permanently to the scopes for this {@link Id4meClaimsConfig}
   ///
   void addScope(String scope) {
-    if (scopes.indexOf(scope) < 0) scopes += " " + scope;
+    if (scopes.contains(scope)) scopes += " " + scope;
   }
-  /*
-
-
-      	/**
-	 * Builds the ID4me claims configuration based on the specified parameters.
-	 * 
-	 * @param parameters
-	 *            the claims parameters
-	 */
-	Id4meClaimsConfig(Id4meClaimsParameters parameters) {
-		this.entries = Collections.unmodifiableList(new ArrayList<>(parameters.getEntries()));
-		this.claimsParam = buildClaimsParam();
-		log.info("Configured claims param:     {}", claimsParam);
-
-		this.essentialClaims = buildEssentialClaims();
-		log.info("Configured essential claims: {}", essentialClaims);
-	}
-
-	private String buildClaimsParam() {
-		JSONObject userinfo = new JSONObject();
-		for (Entry entry : entries) {
-			JSONObject p = null;
-
-			if (entry.isEssential()) {
-				p = new JSONObject();
-				p.put("essential", true);
-			}
-
-			String reason = entry.getReason();
-			if (reason != null && !reason.equals("")) {
-				p = p == null ? new JSONObject() : p;
-				p.put("reason", reason);
-			}
-
-			if (p != null)
-				userinfo.put(entry.getName(), p);
-			else
-				userinfo.put(entry.getName(), JSONObject.NULL);
-		}
-
-		return "{\"userinfo\":" + userinfo.toString() + "}";
-	}
-
-	private Set<String> buildEssentialClaims() {
-		Set<String> claims = new HashSet<>();
-		for (Entry entry : entries) {
-			if (entry.isEssential()) {
-				claims.add(entry.getName());
-			}
-		}
-		return Collections.unmodifiableSet(claims);
-	}
-
-	/**
-	 * Returns a set of essential claim names.
-	 * 
-	 * @return the set of essential claim names
-	 */
-	Set<String> getEssentialClaims() {
-		return essentialClaims;
-	}
-
-	/**
-	 * Checks if the specified claim is essential.
-	 * 
-	 * @param claimName
-	 *            the claim name
-	 * 
-	 * @return whether the specified claim is essential
-	 */
-	boolean isEssential(String claimName) {
-		return essentialClaims.contains(claimName);
-	}
-  */
 }
