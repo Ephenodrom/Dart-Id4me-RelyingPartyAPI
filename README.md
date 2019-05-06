@@ -9,6 +9,7 @@ Id4me Relying Party Api provides easy integration of the Id4me login into your p
 2. [Import](#import)
 3. [Login Flow](#login-flow)
    * [Basics](#basics)
+   * [Create login service](#create-login-service)
    * [Create Session Data](#create-session-data)
    * [Build Authorization Url](#build-authorization-url)
    * [Authenticate](#authenticate)
@@ -41,7 +42,27 @@ import 'package:id4me_relying_party_api/id4me_relying_party_api.dart';
 
 The main class used is the [Id4meLogon](/lib/src/Id4meLogon.dart) class. The package also contains many more classes that are used by the Id4meLogon class. View the [Example](/example/main.dart) for a detailed example on how to use the Id4meLogon.
 
+### Create login service
+
+The first step in the login flow is to create an instance of the login service class [Id4meLogon](/lib/src/Id4meLogon.dart) with the necessery properties and [Id4meClaimsParameters](/lib/src/model/Id4meClaimsParameters.dart).
+
+```dart
+
+Map<String, dynamic> properties = {
+    Id4meConstants.KEY_CLIENT_NAME: "ID4me Login Demo",
+    Id4meConstants.KEY_LOGO_URI: "https://domain.com/favicon.png",
+    Id4meConstants.KEY_REDIRECT_URI: "https://domain.com/redirect"
+};
+
+Id4meClaimsParameters claimsParameters = new Id4meClaimsParameters();
+  claimsParameters.entries.add(Entry("email", true, "Needed to create the profile"));
+
+Id4meLogon logon = new Id4meLogon(properties: properties, claimsParameters: claimsParameters);
+```
+
 ### Create Session Data
+
+The next step is to create the session data, that is needed throughout the hole login process. It fetches for example the DNS data and identity authority data.
 
 ```dart
 Id4meSessionData sessionData = await logon.createSessionData(domain, true);
@@ -49,17 +70,25 @@ Id4meSessionData sessionData = await logon.createSessionData(domain, true);
 
 ### Build Authorization Url
 
+The data from the DNS can now be used to create an authentication url to which the user is routed.
+
 ```dart
 String authorizationURL = logon.buildAuthorizationUrl(sessionData);
 ```
 
 ### Authenticate
 
+After the user has been redirected by the *Identity Authority*, the code, given as a query parameter in the redirect url, can be used to authorize with the *Identity Agent*.
+
+The redirect url could look like this : <https://domain.com/redirect?code=DKYPkDfkH0cLw3_NmS6IGQ.BPA4gUtfLh0gljqQ3wJNVw&state=authorize>
+
 ```dart
 await logon.authenticate(sessionData, code);
 ```
 
 ### Fetch UserInfo
+
+After successful authorization, the requested user data can be queried.
 
 ```dart
 Map<String, dynamic> info = await logon.fetchUserinfo(sessionData);

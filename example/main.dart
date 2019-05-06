@@ -25,9 +25,8 @@ void main() async {
       properties: properties, claimsParameters: claimsParameters);
 
   print("Please enter your ID4me identifier: ");
-  //String domain = stdin.readLineSync();
+  String domain = stdin.readLineSync();
 
-  String domain = "junkdragons.de";
   print("Creating session data...");
   Id4meSessionData sessionData = await logon.createSessionData(domain, true);
 
