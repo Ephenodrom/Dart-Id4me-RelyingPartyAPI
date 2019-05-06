@@ -3,7 +3,7 @@ import 'package:id4me_relying_party_api/id4me_relying_party_api.dart';
 import "package:test/test.dart";
 
 void main() {
-  test('Test lookupRecord', () async {
+  test('Test getId4meDnsDataFromRRecords', () async {
     List<RRecord> records = [];
     RRecord r = new RRecord(
         name: "_openid.example.com",
@@ -17,7 +17,7 @@ void main() {
     expect(data.iag, "identityagent.de");
   });
 
-  test('Test lookupRecord2', () async {
+  test('Test getId4meDnsDataFromRRecords2', () async {
     List<RRecord> records = [];
 
     RRecord r = new RRecord(

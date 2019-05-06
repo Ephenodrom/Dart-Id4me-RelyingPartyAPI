@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.2] - 2019-05-06
+
+* Improve code
+
 ## [0.3.0] - 2019-05-06
 
 * Improve documentation
