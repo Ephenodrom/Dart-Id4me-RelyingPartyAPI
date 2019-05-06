@@ -7,7 +7,7 @@ void main() {
     List<RRecord> records = [];
     RRecord r = new RRecord(
         name: "_openid.example.com",
-        type: 16,
+        rType: 16,
         TTL: 300,
         data: "v=OID1;iss=auth.freedom-id.de;clp=identityagent.de");
     records.add(r);
@@ -22,7 +22,7 @@ void main() {
 
     RRecord r = new RRecord(
         name: "_openid.example.com",
-        type: 16,
+        rType: 16,
         TTL: 300,
         data: '"v=OID1;iss=id.test.denic.de;clp=identityagent.de"');
     records.add(r);
