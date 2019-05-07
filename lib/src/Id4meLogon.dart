@@ -9,7 +9,6 @@ class Id4meLogon {
   List<String> redirectUris;
   String logoUri;
   String registrationDataPath;
-  //String dnssecRootKey;
   Id4meClaimsConfig claimsConfig;
   Id4meKeyPairHandler keyPairHandler;
   bool fallbackToScopes;
@@ -18,19 +17,17 @@ class Id4meLogon {
 
   Id4meLogon(
       {Map<String, dynamic> properties,
-      Id4meClaimsParameters claimsParameters,
+      Map<String, dynamic> claimsParameters,
       List<String> scopes,
       this.logSessionData = false}) {
     if (properties != null) {
       _readProperties(properties);
     }
-    claimsConfig = new Id4meClaimsConfig(claimsParam: claimsParameters.toMap());
+    claimsConfig = new Id4meClaimsConfig(claimsParam: claimsParameters);
     if (scopes != null)
       for (String scope in scopes) {
         claimsConfig.addScope(scope);
       }
-
-    // TODO initSSLSocketFactory();
   }
 
   void _readProperties(Map<String, dynamic> properties) {

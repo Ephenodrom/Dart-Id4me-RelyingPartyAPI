@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.0] - 2019-05-07
+
+* Convert Claimsparameter to Map<String,dynamic>
+
 ## [0.3.2] - 2019-05-06
 
 * Improve code

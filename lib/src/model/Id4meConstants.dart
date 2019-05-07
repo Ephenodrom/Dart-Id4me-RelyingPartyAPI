@@ -14,4 +14,8 @@ class Id4meConstants {
   static String KEY_DNSSEC_REQUIRED = "dnssecRequired";
   static String KEY_PRIVATE_KEY = "privKey";
   static String KEY_PUBLIC_KEY = "pubKey";
+
+  static String KEY_CLAIM_EMAIL = "email";
+  static String KEY_CLAIM_NAME = "name";
+  static String KEY_CLAIM_GIVEN_NAME = "given_name";
 }

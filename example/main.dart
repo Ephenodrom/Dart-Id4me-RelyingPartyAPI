@@ -14,12 +14,17 @@ void main() async {
     Id4meConstants.KEY_DNSSEC_REQUIRED: false
   };
 
-  Id4meClaimsParameters claimsParameters = new Id4meClaimsParameters();
-  claimsParameters.entries
-      .add(Entry("email", true, "Needed to create the profile"));
-  claimsParameters.entries
-      .add(Entry("name", false, "Displayname in the user dat"));
-  claimsParameters.entries.add(Entry("given_name", false, ""));
+  Map<String, dynamic> claimsParameters = {
+    Id4meConstants.KEY_CLAIM_EMAIL: {
+      "required": true,
+      "reason": "Needed to create the profile"
+    },
+    Id4meConstants.KEY_CLAIM_NAME: {
+      "required": true,
+      "reason": "Displayname in the user data"
+    },
+    Id4meConstants.KEY_CLAIM_GIVEN_NAME: {"required": true, "reason": ""},
+  };
 
   Id4meLogon logon = new Id4meLogon(
       properties: properties, claimsParameters: claimsParameters);

@@ -25,7 +25,7 @@ Update pubspec.yaml and add the following line to your dependencies.
 
 ```yaml
 dependencies:
-  id4me_relying_party_api: ^0.3.2
+  id4me_relying_party_api: ^0.4.0
 ```
 
 ## Import
@@ -54,8 +54,17 @@ Map<String, dynamic> properties = {
     Id4meConstants.KEY_REDIRECT_URI: "https://domain.com/redirect"
 };
 
-Id4meClaimsParameters claimsParameters = new Id4meClaimsParameters();
-  claimsParameters.entries.add(Entry("email", true, "Needed to create the profile"));
+Map<String, dynamic> claimsParameters = {
+    Id4meConstants.KEY_CLAIM_EMAIL: {
+      "required": true,
+      "reason": "Needed to create the profile"
+    },
+    Id4meConstants.KEY_CLAIM_NAME: {
+      "required": true,
+      "reason": "Displayname in the user data"
+    },
+    Id4meConstants.KEY_CLAIM_GIVEN_NAME: {"required": true, "reason": ""},
+};
 
 Id4meLogon logon = new Id4meLogon(properties: properties, claimsParameters: claimsParameters);
 ```

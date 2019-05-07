@@ -11,7 +11,6 @@ import 'package:uuid/uuid.dart';
 import 'package:jose/jose.dart';
 
 part "src/Id4meLogon.dart";
-part "src/model/Id4meClaimsParameters.dart";
 part "src/model/Id4meConstants.dart";
 part "src/model/Id4meDnsData.dart";
 part "src/model/Id4meDnsDataWithLoginHint.dart";
