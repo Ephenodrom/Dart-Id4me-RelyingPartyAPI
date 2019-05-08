@@ -23,6 +23,9 @@ class Id4meLogon {
     if (properties != null) {
       _readProperties(properties);
     }
+    if (!Id4meValidator.isValidClaimsParameters(claimsParameters)) {
+      throw Exception("Invalid claims parameters!");
+    }
     claimsConfig = new Id4meClaimsConfig(claimsParam: claimsParameters);
     if (scopes != null)
       for (String scope in scopes) {

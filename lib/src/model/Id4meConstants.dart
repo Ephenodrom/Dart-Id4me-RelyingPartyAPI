@@ -15,7 +15,24 @@ class Id4meConstants {
   static String KEY_PRIVATE_KEY = "privKey";
   static String KEY_PUBLIC_KEY = "pubKey";
 
-  static String KEY_CLAIM_EMAIL = "email";
+  static String KEY_CLAIM_SUB = "sub";
   static String KEY_CLAIM_NAME = "name";
   static String KEY_CLAIM_GIVEN_NAME = "given_name";
+  static String KEY_CLAIM_FAMILY_NAME = "family_name";
+  static String KEY_CLAIM_MIDDLE_NAME = "middle_name";
+  static String KEY_CLAIM_NICKNAME = "nickname";
+  static String KEY_CLAIM_PREFERRED_USERNAME = "preferred_username";
+  static String KEY_CLAIM_PROFILE = "profile";
+  static String KEY_CLAIM_PICTURE = "picture";
+  static String KEY_CLAIM_WEBSITE = "website";
+  static String KEY_CLAIM_EMAIL = "email";
+  static String KEY_CLAIM_EMAIL_VERIFIED = "email_verified";
+  static String KEY_CLAIM_GENDER = "gender";
+  static String KEY_CLAIM_BIRTHDATE = "birthdate";
+  static String KEY_CLAIM_ZONEINFO = "zoneinfo";
+  static String KEY_CLAIM_LOCALE = "locale";
+  static String KEY_CLAIM_PHONE_NUMBER = "phone_number";
+  static String KEY_CLAIM_PHONE_NUMBER_VERIFIED = "phone_number_verified";
+  static String KEY_CLAIM_ADDRESS = "address";
+  static String KEY_CLAIM_UPDATED = "updated";
 }
