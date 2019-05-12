@@ -44,7 +44,7 @@ The main class used is the [Id4meLogon](/lib/src/Id4meLogon.dart) class. The pac
 
 ### Create login service
 
-The first step in the login flow is to create an instance of the login service class [Id4meLogon](/lib/src/Id4meLogon.dart) with the necessery properties and [Id4meClaimsParameters](/lib/src/model/Id4meClaimsParameters.dart).
+The first step in the login flow is to create an instance of the login service class [Id4meLogon](/lib/src/Id4meLogon.dart) with the necessery properties and claimsparameter. See the [example](/example/main.dart) on how to set them up.
 
 ```dart
 
