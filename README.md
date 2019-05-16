@@ -14,8 +14,9 @@ Id4me Relying Party Api provides easy integration of the Id4me login into your p
    * [Build Authorization Url](#build-authorization-url)
    * [Authenticate](#authenticate)
    * [Fetch UserInfo](#fetch-userinfo)
-4. [Changelog](#changelog)
-5. [Copyright and license](#copyright-and-license)
+4. [Exceptions](#exceptions)
+5. [Changelog](#changelog)
+6. [Copyright and license](#copyright-and-license)
 
 ## Install
 
@@ -25,7 +26,7 @@ Update pubspec.yaml and add the following line to your dependencies.
 
 ```yaml
 dependencies:
-  id4me_relying_party_api: ^0.4.0
+  id4me_relying_party_api: ^0.5.0
 ```
 
 ## Import
@@ -74,7 +75,20 @@ Id4meLogon logon = new Id4meLogon(properties: properties, claimsParameters: clai
 The next step is to create the session data, that is needed throughout the hole login process. It fetches for example the DNS data and identity authority data.
 
 ```dart
-Id4meSessionData sessionData = await logon.createSessionData(domain, true);
+Id4meSessionData sessionData;
+try {
+  sessionData = await logon.createSessionData(domain, true);
+} on DnsResolveException {
+  // Handle DnsResolveException
+} on IdentityAuthorityDataFetchException {
+  // Handle IdentityAuthorityDataFetchException
+} on Id4meIdentifierFormatException {
+  // Handle Id4meIdentifierFormatException
+} on DnsDataNotParseableException {
+  // Handle DnsDataNotParseableException
+} catch (e) {
+  // Handle any other exception
+}
 ```
 
 ### Build Authorization Url
@@ -92,7 +106,15 @@ After the user has been redirected by the *Identity Authority*, the code, given 
 The redirect url could look like this : <https://domain.com/redirect?code=DKYPkDfkH0cLw3_NmS6IGQ.BPA4gUtfLh0gljqQ3wJNVw&state=authorize>
 
 ```dart
-await logon.authenticate(sessionData, code);
+try {
+  await logon.authenticate(sessionData, code);
+} on BearerTokenFetchException {
+  // Handle BearerTokenFetchException
+} on BearerTokenNotFoundException {
+  // Handle BearerTokenNotFoundException
+} catch (e) {
+  // Handle any other exception
+}
 ```
 
 ### Fetch UserInfo
@@ -100,8 +122,53 @@ await logon.authenticate(sessionData, code);
 After successful authorization, the requested user data can be queried.
 
 ```dart
-Map<String, dynamic> info = await logon.fetchUserinfo(sessionData);
+Map<String, dynamic> info;
+try {
+  info = await logon.fetchUserinfo(sessionData);
+} on MandatoryClaimsException {
+  // Handle MandatoryClaimsException
+} on UserInfoFetchException {
+  // Handle UserInfoFetchException
+} catch (e) {
+  // Handle any other exception
+}
 ```
+
+## Exceptions
+
+The login service can throw several id4me specific exceptions throughout the login flow. View the [example](/example/main.dart) for the right time to catch them.
+
+### Id4meIdentifierFormatException
+
+If the ID4me identifier has the wrong format, an [Id4meIdentifierFormatException](lib/src/model/exception/Id4meIdentifierFormatException.dart) is thrown.
+
+### DnsResolveException
+
+The [DnsResolveException](/lib/src/model/exception/DnsResolveException.dart) is thrown when something unexpected happens while trying to fetch the _openid TXT record for the given id4me login.
+
+### DnsDataNotParseableException
+
+[DnsDataNotParseableException]/lib/src/model/exception/DnsDataNotParseableException.dart) is thrown if the [Id4meDnsData](lib/src/model/Id4meDnsData.dart) could not be parsed from the dns record value.
+
+### IdentityAuthorityDataFetchException
+
+If it is not possible to fetch the data for configured Identity Authority, an [IdentityAuthorityDataFetchException](/lib/src/model/exception/IdentityAuthorityDataFetchException.dart) is thrown.
+
+### BearerTokenFetchException
+
+A [BearerTokenFetchException](/lib/src/model/exception/BearerTokenFetchException.dart) is thrown when something unexpected happens while trying to fetch the bearer token from the Idenity Agent.
+
+### BearerTokenNotFoundException
+
+If the response from the Idenity Agent does not contain a bearer token the [BearerTokenNotFoundException](/lib/src/model/exception/BearerTokenNotFoundException.dart) is thrown.
+
+### UserInfoFetchException
+
+When something unexpected happens while trying to fetch the userinfo from the Identity Agent, an [UserInfoFetchException](/lib/src/model/exception/UserInfoFetchException.dart) is thrown.
+
+### MandatoryClaimsException
+
+If the UserInfo does not contain all claimes that are marked as required, the [MandatoryClaimsException](/lib/src/model/exception/MandatoryClaimsException.dart) is thrown.
 
 ## Changelog
 

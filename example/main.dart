@@ -33,7 +33,19 @@ void main() async {
   String domain = stdin.readLineSync();
 
   print("Creating session data...");
-  Id4meSessionData sessionData = await logon.createSessionData(domain, true);
+
+  Id4meSessionData sessionData;
+  try {
+    sessionData = await logon.createSessionData(domain, true);
+  } on DnsResolveException {
+    // Handle dns resolving exception
+  } on IdentityAuthorityDataFetchException {
+    // Handle Identity Authority data fetch exception
+  } on Id4meIdentifierFormatException {
+    // Handle Id4meIdentifierFormatException
+  } catch (e) {
+    // Handle any other exception
+  }
 
   print("Building authorization URL...");
   String authorizationURL = logon.buildAuthorizationUrl(sessionData);
@@ -44,9 +56,26 @@ void main() async {
   String code = stdin.readLineSync();
 
   print("Verifying code...");
-  await logon.authenticate(sessionData, code);
+  try {
+    await logon.authenticate(sessionData, code);
+  } on BearerTokenFetchException {
+    // Handle error while fetching bearer token
+  } on BearerTokenNotFoundException {
+    // Handle missing bearer token
+  } catch (e) {
+    // Handle any other exception
+  }
 
   print("Retrieving user info...");
-  Map<String, dynamic> info = await logon.fetchUserinfo(sessionData);
+  Map<String, dynamic> info;
+  try {
+    info = await logon.fetchUserinfo(sessionData);
+  } on MandatoryClaimsException {
+    // Handle missing mandatory claims
+  } on UserInfoFetchException {
+    // Handle user info fetch exception
+  } catch (e) {
+    // Handle any other exception
+  }
   print(json.encode(info));
 }

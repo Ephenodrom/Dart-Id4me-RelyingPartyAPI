@@ -1,34 +1,64 @@
 part of id4me_api;
 
+///
+/// Class for fetching and processing data from the _openid TXT record
+///
 class Id4meResolver {
   static String TAG = "Id4meResolver";
 
+  ///
+  /// Fetches the data from the _openid TXT record for the given [id4me] domain.
+  /// Trys to build up an instance of Id4meDnsDataWithLoginHint and returns it.
+  ///
+  /// Throws an [Id4meIdentifierFormatException] if the identifier has the wrong format.
+  /// Throws an [DnsDataNotParseableException] if [Id4meDnsData] could not be parsed from dns record value.
+  ///
   static Future<Id4meDnsDataWithLoginHint> getDataFromDns(String id4me,
       {dnssec = false}) async {
     if (!Id4meValidator.isValidUserid(id4me)) {
-      throw new Exception("ID4me identifier has wrong format: " + id4me);
+      throw Id4meIdentifierFormatException(
+          message: "ID4me identifier has wrong format: " + id4me);
     }
     String loginHint;
-    int atPos = id4me.indexOf('@');
-    if (atPos > 0) {
-      String localPart = id4me.substring(0, atPos);
-      String domain = id4me.substring(atPos + 1, id4me.length);
-      //id4me = sha256(localPart) + "._openid." + domain;
-      loginHint = localPart + "." + domain;
+    EmailAddress email = EmailUtils.parseEmailAddress(id4me);
+    if (email != null) {
+      id4me =
+          convertSha256(email.local) + "._openid." + email.domain.toString();
+      loginHint = email.local + "." + email.domain.toString();
     } else {
       loginHint = id4me;
       id4me = "_openid." + id4me;
     }
 
     String domain = id4me.endsWith(".") ? id4me : id4me + ".";
-    List<RRecord> records =
-        await DnsUtils.lookupRecord(domain, RRecordType.TXT, dnssec: dnssec);
+    List<RRecord> records = null;
+    try {
+      records =
+          await DnsUtils.lookupRecord(domain, RRecordType.TXT, dnssec: dnssec);
+    } catch (e) {
+      return null;
+    }
 
     Id4meDnsData dnsData = getId4meDnsDataFromRRecords(records);
+    if (dnsData == null) {
+      throw DnsDataNotParseableException();
+    }
 
     return Id4meDnsDataWithLoginHint(dnsData, loginHint);
   }
 
+  ///
+  /// Convert the given String [s] to sha256 an return only the first 56 chars.
+  ///
+  static String convertSha256(String s) {
+    List<int> bytes = utf8.encode(s);
+    String hash = sha256.convert(bytes).toString();
+    return hash.substring(0, 56);
+  }
+
+  ///
+  /// Converts the DNS record to an instance of Id4meDnsData. Returns null if converting fails.
+  ///
   static Id4meDnsData getId4meDnsDataFromRRecords(List<RRecord> records) {
     String v;
     String iau;
@@ -44,56 +74,50 @@ class Id4meResolver {
             if ("v" == e[0]) {
               if (v != null) {
                 Logger(TAG)
-                    .info("More than one v field found in TXT RR: {}", r.data);
-                throw new Exception(
-                    "More than one v field found in TXT RR: " + r.data);
+                    .info("More than one v field found in TXT RR: ${r.data}");
+                return null;
               } else {
                 v = e[1].trim();
               }
             }
             if ("iss" == e[0]) {
               if (iau != null) {
-                Logger(TAG).info(
-                    "More than one iss field found in TXT RR: {}", r.data);
-                throw new Exception(
-                    "More than one iss field found in TXT RR: " + r.data);
+                Logger(TAG)
+                    .info("More than one iss field found in TXT RR: ${r.data}");
+                return null;
               } else {
                 iau = e[1].trim();
-                // TODO iau = IDN.toASCII(iau);
               }
             }
             if ("clp" == e[0]) {
               if (iag != null) {
-                Logger(TAG).info(
-                    "More than one clp field found in TXT RR: {}", r.data);
+                Logger(TAG)
+                    .info("More than one clp field found in TXT RR: ${r.data}");
                 throw new Exception(
-                    "More than one clp field found in TXT RR: " + r.data);
+                    "More than one clp field found in TXT RR: ${r.data}");
               } else {
                 iag = e[1].trim();
-                // TODO iag = IDN.toASCII(iag);
               }
             }
 
             if ("iau" == e[0]) {
               if (iau != null) {
-                Logger(TAG).info(
-                    "More than one iss field found in TXT RR: {}", r.data);
+                Logger(TAG)
+                    .info("More than one iss field found in TXT RR: ${r.data}");
                 throw new Exception(
-                    "More than one iss field found in TXT RR: " + r.data);
+                    "More than one iss field found in TXT RR: ${r.data}");
               } else {
                 iau = e[1].trim();
-                // TODO iau = IDN.toASCII(iau);
               }
             }
             if ("iag" == e[0]) {
               if (iag != null) {
-                Logger(TAG).info(
-                    "More than one clp field found in TXT RR: {}", r.data);
+                Logger(TAG)
+                    .info("More than one clp field found in TXT RR: ${r.data}");
                 throw new Exception(
-                    "More than one clp field found in TXT RR: " + r.data);
+                    "More than one clp field found in TXT RR: ${r.data}");
               } else {
                 iag = e[1].trim();
-                // TODO iag = IDN.toASCII(iag);
               }
             }
           }

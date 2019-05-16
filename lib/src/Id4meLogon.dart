@@ -56,15 +56,6 @@ class Id4meLogon {
       this.logoUri = properties[Id4meConstants.KEY_LOGO_URI];
     }
 
-    /*
-    if (properties.containsKey(Id4meConstants.KEY_DNS_ROOT_KEY)) {
-      this.dnssecRootKey = properties[Id4meConstants.KEY_DNS_ROOT_KEY];
-    } else {
-      this.dnssecRootKey =
-          ". IN DS 19036 8 2 49AAC11D7B6F6446702E54A1607371607A1A41855200FD2CE1CDDE32F24E8FB5";
-    }
-    */
-
     if (properties.containsKey(Id4meConstants.KEY_REGISTRATION_DATA_PATH)) {
       this.registrationDataPath =
           properties[Id4meConstants.KEY_REGISTRATION_DATA_PATH];
@@ -134,14 +125,22 @@ class Id4meLogon {
     return authorizeUri;
   }
 
+  ///
+  /// Foo
+  ///
+  /// Throws an [BearerTokenFetchException] if the bearer token could not be fetched from the Identity Authority.
+  /// Throws an [BearerTokenNotFoundException] if there is no bearer token in the response from the Identity Authority.
+  ///
   Future<void> authenticate(Id4meSessionData sessionData, String code) async {
     Map<String, dynamic> bearerToken = await getToken(sessionData, code);
+    if (bearerToken == null) {
+      throw BearerTokenFetchException();
+    }
     Logger(TAG).info("Authenticating with token: {}", bearerToken);
     if (bearerToken.containsKey("token_type")) {
       String type = bearerToken["token_type"];
       if (!StringUtils.equalsIgnoreCase(type, "bearer")) {
-        // TODO Handle Bearer token not found in response
-        // throw new TokenNotFoundException("Bearer token not found in response!");
+        throw BearerTokenNotFoundException();
       }
     }
 
@@ -176,46 +175,55 @@ class Id4meLogon {
     return;
   }
 
+  ///
+  ///
+  /// Throws [MandatoryClaimsException] if one of the mandatory claims is missing in the userinfo.
+  ///
   Future<Map<String, dynamic>> fetchUserinfo(
       Id4meSessionData sessionData) async {
     Map<String, dynamic> userInfo = await getUserinfo(sessionData);
+    if (userInfo == null) {
+      throw UserInfoFetchException();
+    }
 
-    /*
-		if (userinfo.containsKey("claims")) {
-			// workaround because of an iag error, move the claims from the claims array to
-			// the json root element
-			JSONObject json = new JSONObject();
-			String[] names = JSONObject.getNames(userinfo);
-			for (String n : names) {
-				if (!n.equals("claims")) {
-					json.put(n, userinfo.get(n));
-				}
+    checkMandatoryClaims(userInfo);
 
-			}
-			JSONObject claims = userinfo.getJSONObject("claims");
-			names = JSONObject.getNames(claims);
-			for (String n : names) {
-				json.put(n, claims.get(n));
-			}
-			userinfo = json;
-		}
-
-		checkMandatoryClaims(userinfo);
-    */
     sessionData.userinfo = userInfo;
     sessionData.state = "userinfo";
     return userInfo;
   }
 
   ///
+  /// Checks if the given [userInfo] contains every mandatory claim.
+  ///
+  /// Throws [MandatoryClaimsException] if one of the mandatory claims is missing in the userinfo.
+  ///
+  void checkMandatoryClaims(Map<String, dynamic> userInfo) {
+    Logger(TAG).info("Check if all mandatory claims exist in the userinfo");
+    for (String claimName in claimsConfig.essentialClaims) {
+      if (!userInfo.containsKey(claimName)) {
+        Logger(TAG).info(
+            "Mandatory claim \"$claimName\" not found in userinfo: $userInfo");
+        throw MandatoryClaimsException(
+            message: "Mandatory claim \"$claimName\" not found!");
+      }
+    }
+  }
+
+  ///
   /// Builds the id4me session data, by fetching the DNS data and identity authority data.
+  ///
+  /// Throws an [DnsResolveException] if the dns lookup for the given [id4me] is not possible.
+  /// Throws an [IdentityAuthorityDataFetchException] if the Identity Authority data could not be fetched.
   ///
   Future<Id4meSessionData> createSessionData(
       String id4me, bool autoRegisterClient) async {
     Logger(TAG).info("Fetching Id4meDnsData for login $id4me");
     Id4meDnsDataWithLoginHint dnsDataWithLoginHint =
         await Id4meResolver.getDataFromDns(id4me, dnssec: dnsSecRequired);
-
+    if (dnsDataWithLoginHint == null) {
+      throw DnsResolveException();
+    }
     Logger(TAG).info("Setup id4me session data");
     Id4meSessionData sessionData = new Id4meSessionData();
     sessionData.id4me = id4me;
@@ -230,6 +238,9 @@ class Id4meLogon {
     sessionData.logoUri = this.logoUri;
 
     Id4meIdentityAuthorityData iauData = await fetchIauData(sessionData);
+    if (dnsDataWithLoginHint == null) {
+      throw IdentityAuthorityDataFetchException();
+    }
     sessionData.iauData = iauData;
     if (autoRegisterClient) {
       await doDynamicClientRegistration(sessionData);
@@ -250,8 +261,14 @@ class Id4meLogon {
         "https://" + iau + "/.well-known/openid-configuration";
     Logger(TAG).info("Fetch openid configuration for $iau at $wellKnownUri");
     Id4meIdentityAuthorityData iauData = new Id4meIdentityAuthorityData();
-    Map<String, dynamic> wellKnownData =
-        await HttpUtils.getForJson(wellKnownUri);
+    Map<String, dynamic> wellKnownData;
+    try {
+      wellKnownData = await HttpUtils.getForJson(wellKnownUri);
+    } catch (e) {
+      Logger(TAG)
+          .info("Could not fetch Identity Authority data. " + e.toString());
+      return null;
+    }
     iauData.wellKnown = wellKnownData;
     return iauData;
   }
@@ -314,6 +331,9 @@ class Id4meLogon {
     return;
   }
 
+  ///
+  /// Fetch the bearer token from the Identity Authority
+  ///
   Future<Map<String, dynamic>> getToken(
       Id4meSessionData logonData, String code) async {
     Id4meIdentityAuthorityData data = logonData.iauData;
@@ -333,8 +353,15 @@ class Id4meLogon {
     headers["Content-Type"] = "application/x-www-form-urlencoded";
     headers["Authorization"] = auth;
 
-    return await HttpUtils.postForJson(url, "",
-        queryParameters: parameters, headers: headers);
+    try {
+      return await HttpUtils.postForJson(url, "",
+          queryParameters: parameters, headers: headers);
+    } catch (e) {
+      Logger(TAG).info(
+          "Could not fetch bearer token from Identity Authority. " +
+              e.toString());
+      return null;
+    }
   }
 
   int getExpired(Map<String, dynamic> token) {
@@ -406,6 +433,9 @@ class Id4meLogon {
     return identityHandle;
   }
 
+  ///
+  /// Fetches the user info from the Idendity Agent. Returns null if something unexpected happens.
+  ///
   Future<Map<String, dynamic>> getUserinfo(Id4meSessionData sessionData) async {
     // String name = "_443._tcp." + sessionData.iag + ".";
     // List<RRecord> records = await DnsUtils.lookupRecord(name, RRecordType.TLSA);
@@ -420,20 +450,28 @@ class Id4meLogon {
     Map<String, String> headers = new Map<String, String>();
     headers["Authorization"] = authHeader;
 
-    Map<String, dynamic> response =
-        await HttpUtils.getForJson(url, headers: headers);
+    Map<String, dynamic> response;
+    try {
+      response = await HttpUtils.getForJson(url, headers: headers);
+    } catch (e) {
+      Logger(TAG).info(
+          "Could not fetch user data from Identity Agent. " + e.toString());
+      return null;
+    }
 
     if (response.containsKey("_claim_sources") &&
         response.containsKey("_claim_names")) {
-      // distributed claims
       response = await getDistributedClaims(response);
     }
 
     if (response.containsKey("error")) {
-      if (response.containsKey("error_description"))
-        throw new Exception(response["error_description"]);
-      else
-        throw new Exception("Unknown error while fetching user info");
+      if (response.containsKey("error_description")) {
+        Logger(TAG).info(response["error_description"]);
+        return null;
+      } else {
+        Logger(TAG).info("Unknown error while fetching user info");
+        return null;
+      }
     }
     return response;
   }

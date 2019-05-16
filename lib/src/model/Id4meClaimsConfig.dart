@@ -3,7 +3,7 @@ part of id4me_api;
 class Id4meClaimsConfig {
   List<Entry> entries;
   Map<String, dynamic> claimsParam;
-  Set<String> essentialClaims;
+  List<String> essentialClaims;
   List<String> profile = [
     "name",
     "family_name",

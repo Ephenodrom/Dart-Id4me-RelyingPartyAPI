@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.5.0] - 2019-05-15
+
+* Add error handling
+
 ## [0.4.0] - 2019-05-07
 
 * Convert Claimsparameter to Map<String,dynamic>

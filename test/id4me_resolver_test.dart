@@ -31,4 +31,9 @@ void main() {
     expect(data.iau, "id.test.denic.de");
     expect(data.iag, "identityagent.de");
   });
+
+  test('Test convertSha256', () async {
+    String hash = Id4meResolver.convertSha256("jon.doe");
+    expect(hash, "24f4ef2281fc620c745d74bf354c18b61987c23e645a7441c25254a9");
+  });
 }
