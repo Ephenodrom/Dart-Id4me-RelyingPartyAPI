@@ -148,7 +148,7 @@ The [DnsResolveException](/lib/src/model/exception/DnsResolveException.dart) is 
 
 ### DnsDataNotParseableException
 
-[DnsDataNotParseableException]/lib/src/model/exception/DnsDataNotParseableException.dart) is thrown if the [Id4meDnsData](lib/src/model/Id4meDnsData.dart) could not be parsed from the dns record value.
+[DnsDataNotParseableException](/lib/src/model/exception/DnsDataNotParseableException.dart) is thrown if the [Id4meDnsData](lib/src/model/Id4meDnsData.dart) could not be parsed from the dns record value.
 
 ### IdentityAuthorityDataFetchException
 
