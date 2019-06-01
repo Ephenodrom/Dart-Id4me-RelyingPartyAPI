@@ -27,10 +27,11 @@ class Id4meLogon {
       throw Exception("Invalid claims parameters!");
     }
     claimsConfig = new Id4meClaimsConfig(claimsParam: claimsParameters);
-    if (scopes != null)
+    if (scopes != null){
       for (String scope in scopes) {
         claimsConfig.addScope(scope);
       }
+    }
   }
 
   void _readProperties(Map<String, dynamic> properties) {
@@ -151,27 +152,33 @@ class Id4meLogon {
       // TODO HANDLE JWT ENCRYPTED
 
       sessionData.idToken = idToken;
-      if (identityHandle == null)
+      if (identityHandle == null){
         identityHandle = identityHandleFromIdToken(sessionData, idToken);
+      }
     }
 
     if (bearerToken.containsKey("access_token")) {
       String accessToken = bearerToken["access_token"];
       sessionData.accessToken = accessToken;
-      if (identityHandle == null)
+      if (identityHandle == null){
         identityHandle =
             identityHandleFromAccessToken(sessionData, accessToken);
+      }
     }
 
-    if (identityHandle != null) sessionData.identityHandle = identityHandle;
+    if (identityHandle != null) {
+      sessionData.identityHandle = identityHandle;
+    }
 
     sessionData.bearerToken = bearerToken;
     sessionData.userinfo = sessionData.accessTokenUserinfo;
-    if (sessionData.userinfo == null)
+    if (sessionData.userinfo == null){
       sessionData.userinfo = sessionData.idTokenUserinfo;
+    }
 
-    if (getExpired(bearerToken) != null)
+    if (getExpired(bearerToken) != null){
       sessionData.tokenExpires = getExpired(bearerToken);
+    }
     return;
   }
 

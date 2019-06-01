@@ -31,7 +31,7 @@ class Id4meResolver {
     }
 
     String domain = id4me.endsWith(".") ? id4me : id4me + ".";
-    List<RRecord> records = null;
+    List<RRecord> records;
     try {
       records =
           await DnsUtils.lookupRecord(domain, RRecordType.TXT, dnssec: dnssec);
