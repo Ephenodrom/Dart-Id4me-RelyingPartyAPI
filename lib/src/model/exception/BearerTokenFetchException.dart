@@ -7,7 +7,8 @@ class BearerTokenFetchException implements Exception {
   final String message;
 
   BearerTokenFetchException(
-      {this.message = "Could not fetch bearer token from Identity Authiroty"});
+      {this.message = 'Could not fetch bearer token from Identity Authiroty'});
 
+  @override
   String toString() => message;
 }

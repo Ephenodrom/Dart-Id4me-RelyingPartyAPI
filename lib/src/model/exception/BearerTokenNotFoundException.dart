@@ -7,7 +7,8 @@ class BearerTokenNotFoundException implements Exception {
   final String message;
 
   BearerTokenNotFoundException(
-      {this.message = "Bearer token not found in response"});
+      {this.message = 'Bearer token not found in response'});
 
+  @override
   String toString() => message;
 }

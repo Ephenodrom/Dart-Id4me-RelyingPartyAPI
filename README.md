@@ -26,7 +26,7 @@ Update pubspec.yaml and add the following line to your dependencies.
 
 ```yaml
 dependencies:
-  id4me_relying_party_api: ^0.5.0
+  id4me_relying_party_api: ^0.5.1
 ```
 
 ## Import

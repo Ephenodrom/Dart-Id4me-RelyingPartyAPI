@@ -7,7 +7,8 @@ class DnsDataNotParseableException implements Exception {
   final String message;
 
   DnsDataNotParseableException(
-      {this.message = "Could not parse Id4meDnsData from TXT record"});
+      {this.message = 'Could not parse Id4meDnsData from TXT record'});
 
+  @override
   String toString() => message;
 }

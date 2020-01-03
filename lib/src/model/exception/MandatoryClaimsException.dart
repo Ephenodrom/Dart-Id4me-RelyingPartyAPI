@@ -6,7 +6,8 @@ part of id4me_api;
 class MandatoryClaimsException implements Exception {
   final String message;
 
-  MandatoryClaimsException({this.message = "Mandatory claim not found!"});
+  MandatoryClaimsException({this.message = 'Mandatory claim not found!'});
 
+  @override
   String toString() => message;
 }

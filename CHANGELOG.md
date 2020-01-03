@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.5.1] - 2020-01-03
+
+* Fix linter errors
+
 ## [0.5.0] - 2019-05-15
 
 * Add error handling

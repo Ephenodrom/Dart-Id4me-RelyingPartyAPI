@@ -5,13 +5,13 @@ class Id4meSessionData {
 
   /// The login name. A domain or a email.
   String id4me;
-  String redirectUri = "";
+  String redirectUri = '';
   List<String> redirectUris;
-  String logoUri = "";
-  String loginHint = "";
-  String state = "authorize";
+  String logoUri = '';
+  String loginHint = '';
+  String state = 'authorize';
   String nonce;
-  String scope = "openid";
+  String scope = 'openid';
   bool standardClaimsValidated = false;
   Map<String, dynamic> bearerToken;
   String accessToken;
@@ -25,7 +25,7 @@ class Id4meSessionData {
   Id4meIdentityAuthorityData iauData;
 
   Id4meSessionData() {
-    Uuid uuid = new Uuid();
+    var uuid = Uuid();
     nonce = uuid.v4();
   }
 }

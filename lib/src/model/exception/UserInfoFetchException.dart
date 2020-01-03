@@ -7,7 +7,8 @@ class UserInfoFetchException implements Exception {
   final String message;
 
   UserInfoFetchException(
-      {this.message = "Could not fetch user data from Identity Agent"});
+      {this.message = 'Could not fetch user data from Identity Agent'});
 
+  @override
   String toString() => message;
 }

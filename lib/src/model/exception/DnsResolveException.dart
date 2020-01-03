@@ -6,7 +6,8 @@ part of id4me_api;
 class DnsResolveException implements Exception {
   final String message;
 
-  DnsResolveException({this.message = "Could not resolve dns data"});
+  DnsResolveException({this.message = 'Could not resolve dns data'});
 
+  @override
   String toString() => message;
 }

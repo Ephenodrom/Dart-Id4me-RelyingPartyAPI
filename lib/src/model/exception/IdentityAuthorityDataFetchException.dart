@@ -7,7 +7,8 @@ class IdentityAuthorityDataFetchException implements Exception {
   final String message;
 
   IdentityAuthorityDataFetchException(
-      {this.message = "Could not fetch Identity Authority data"});
+      {this.message = 'Could not fetch Identity Authority data'});
 
+  @override
   String toString() => message;
 }

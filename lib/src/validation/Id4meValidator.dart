@@ -31,11 +31,11 @@ class Id4meValidator {
   /// Check whether given String [id4me] is either a valid email address, or a valid domain name.
   ///
   static bool isValidUserid(String id4me) {
-    if (id4me == null || "" == id4me.trim()) {
+    if (id4me == null || '' == id4me.trim()) {
       return false;
     }
 
-    int idx = id4me.indexOf('@');
+    var idx = id4me.indexOf('@');
     if (idx == 0) {
       return false;
     }
@@ -51,7 +51,7 @@ class Id4meValidator {
   /// Check the given [claimsParameters] are valid.
   ///
   static bool isValidClaimsParameters(Map<String, dynamic> claimsParameters) {
-    for (String key in claimsParameters.keys) {
+    for (var key in claimsParameters.keys) {
       if (!validClaims.contains(key)) {
         return false;
       }
